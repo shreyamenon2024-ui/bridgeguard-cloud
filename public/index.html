@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BridgeGuard | Security Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#0b1220;color:#e5edf7}
+header{padding:24px 6%;background:#111c30;border-bottom:1px solid #26354c}
+header h1{margin:0;font-size:25px;color:#5eead4}
+header p{margin:8px 0 0;color:#9aabc2}
+main{padding:28px 6%;max-width:1500px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+h2{margin:0;font-size:21px}
+button{background:#0d9488;color:white;border:0;padding:11px 17px;border-radius:7px;cursor:pointer;font-weight:bold}
+button:hover{background:#0f766e}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:26px}
+.card{background:#142137;padding:21px;border:1px solid #263750;border-radius:12px}
+.card p{margin:0;color:#9aabc2;font-size:14px}
+.card h3{font-size:29px;margin:13px 0 0}
+.panel{background:#142137;border:1px solid #263750;border-radius:12px;overflow:hidden}
+.panelhead{padding:20px;border-bottom:1px solid #263750}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:900px}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #263750;font-size:13px}
+th{color:#9aabc2;background:#101b2e}
+td{overflow-wrap:anywhere}
+.status{padding:5px 9px;border-radius:20px;font-size:11px;font-weight:bold;white-space:nowrap}
+.low{background:#123c32;color:#6ee7b7}
+.medium{background:#493819;color:#fcd34d}
+.high,.rejected,.flagged{background:#4b202b;color:#fda4af}
+.other{background:#24354c;color:#cbd5e1}
+.reason{color:#fda4af;max-width:260px}
+.message{padding:24px;color:#9aabc2;text-align:center}
+footer{padding:22px;text-align:center;color:#71839c;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+<h1>BridgeGuard</h1>
+<p>Cross-Chain Pharmaceutical Transfer Security Monitor</p>
+</header>
+<main>
+<div class="top">
+<div>
+<h2>Security Overview</h2>
+<p style="color:#9aabc2;margin-bottom:0">Monitor transfer risk and audit records</p>
+</div>
+<button onclick="loadTransfers()">Refresh Data</button>
+</div>
+<div class="cards">
+<div class="card"><p>Total Transfers</p><h3 id="total">—</h3></div>
+<div class="card"><p>Low Risk</p><h3 id="low" style="color:#6ee7b7">—</h3></div>
+<div class="card"><p>Medium Risk</p><h3 id="medium" style="color:#fcd34d">—</h3></div>
+<div class="card"><p>High Risk / Rejected</p><h3 id="high" style="color:#fda4af">—</h3></div>
+</div>
+<div class="panel">
+<div class="panelhead">
+<h2>Transfer Audit Log</h2>
+<p id="updated" style="color:#9aabc2;margin-bottom:0">Loading transfer records...</p>
+</div>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>Batch ID</th>
+<th>Source → Destination</th>
+<th>Quantity</th>
+<th>Risk Score</th>
+<th>Risk Status</th>
+<th>Transfer Status</th>
+<th>Risk Reasons</th>
+</tr>
+</thead>
+<tbody id="records">
+<tr><td colspan="7" class="message">Loading...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<footer>BridgeGuard • Prototype monitoring dashboard • Risk assessment does not itself execute or block blockchain transactions.</footer>
+<script>
+function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, function(c) {
+        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+}
+function statusClass(value) {
+    const s = String(value || "").toLowerCase();
+    if (s === "low") return "low";
+    if (s === "medium") return "medium";
+    if (s === "high" || s === "rejected" || s === "flagged") return s;
+    return "other";
+}
+async function loadTransfers() {
+    const body = document.getElementById("records");
+    document.getElementById("updated").textContent = "Fetching latest records...";
+    try {
+        const response = await fetch("/transfers");
+        if (!response.ok) throw new Error("API returned " + response.status);
+        const data = await response.json();
+        const transfers = Array.isArray(data) ? data : (data.transfers || []);
+        document.getElementById("total").textContent = transfers.length;
+        document.getElementById("low").textContent = transfers.filter(t => t.risk_status === "LOW").length;
+        document.getElementById("medium").textContent = transfers.filter(t => t.risk_status === "MEDIUM").length;
+        document.getElementById("high").textContent = transfers.filter(t => ["HIGH","REJECTED"].includes(t.risk_status)).length;
+        if (transfers.length === 0) {
+            body.innerHTML = '<tr><td colspan="7" class="message">No transfer records found.</td></tr>';
+        } else {
+            body.innerHTML = transfers.map(t => {
+                const reasons = Array.isArray(t.risk_reasons) ? t.risk_reasons.join(", ") : "";
+                return `<tr>
+                <td>${escapeHtml(t.batch_id)}</td>
+                <td>${escapeHtml(t.source_chain)} → ${escapeHtml(t.destination_chain)}</td>
+                <td>${escapeHtml(t.quantity)}</td>
+                <td><strong>${escapeHtml(t.risk_score ?? 0)}</strong></td>
+                <td><span class="status ${statusClass(t.risk_status)}">${escapeHtml(t.risk_status)}</span></td>
+                <td><span class="status ${statusClass(t.transfer_status)}">${escapeHtml(t.transfer_status)}</span></td>
+                <td class="reason">${escapeHtml(reasons || "No risk reasons recorded")}</td>
+                </tr>`;
+            }).join("");
+        }
+        document.getElementById("updated").textContent = "Last refreshed: " + new Date().toLocaleTimeString();
+    } catch (error) {
+        body.innerHTML = '<tr><td colspan="7" class="message">Could not load records. Check that the API server is running and /transfers is available.</td></tr>';
+        document.getElementById("updated").textContent = "Unable to connect to the API.";
+    }
+}
+loadTransfers();
+</script>
+</body>
+</html>
