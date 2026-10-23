@@ -4,132 +4,1493 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BridgeGuard | Security Dashboard</title>
+<title>BridgeGuard | Security Console</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#0b1220;color:#e5edf7}
-header{padding:24px 6%;background:#111c30;border-bottom:1px solid #26354c}
-header h1{margin:0;font-size:25px;color:#5eead4}
-header p{margin:8px 0 0;color:#9aabc2}
-main{padding:28px 6%;max-width:1500px;margin:auto}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:22px}
-h2{margin:0;font-size:21px}
-button{background:#0d9488;color:white;border:0;padding:11px 17px;border-radius:7px;cursor:pointer;font-weight:bold}
-button:hover{background:#0f766e}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:26px}
-.card{background:#142137;padding:21px;border:1px solid #263750;border-radius:12px}
-.card p{margin:0;color:#9aabc2;font-size:14px}
-.card h3{font-size:29px;margin:13px 0 0}
-.panel{background:#142137;border:1px solid #263750;border-radius:12px;overflow:hidden}
-.panelhead{padding:20px;border-bottom:1px solid #263750}
-.tablewrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:900px}
-th,td{text-align:left;padding:14px 16px;border-bottom:1px solid #263750;font-size:13px}
-th{color:#9aabc2;background:#101b2e}
-td{overflow-wrap:anywhere}
-.status{padding:5px 9px;border-radius:20px;font-size:11px;font-weight:bold;white-space:nowrap}
-.low{background:#123c32;color:#6ee7b7}
-.medium{background:#493819;color:#fcd34d}
-.high,.rejected,.flagged{background:#4b202b;color:#fda4af}
-.other{background:#24354c;color:#cbd5e1}
-.reason{color:#fda4af;max-width:260px}
-.message{padding:24px;color:#9aabc2;text-align:center}
-footer{padding:22px;text-align:center;color:#71839c;font-size:12px}
+:root {
+  --bg: #0a1020;
+  --panel: #111b2e;
+  --panel2: #152239;
+  --border: #253550;
+  --text: #e8eef8;
+  --muted: #8fa2bd;
+  --teal: #53e0c0;
+  --green: #6ee7b7;
+  --yellow: #fcd34d;
+  --red: #fb7185;
+  --blue: #93c5fd;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+button, input, select { font: inherit; }
+button, select { cursor: pointer; }
+header {
+  padding: 22px 5%;
+  border-bottom: 1px solid var(--border);
+  background: #0e182a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.brand { display: flex; align-items: center; gap: 13px; }
+.logo {
+  width: 44px; height: 44px;
+  border-radius: 13px;
+  display: grid; place-items: center;
+  background: #143b3a;
+  color: var(--teal);
+  font-size: 24px;
+}
+h1 { margin: 0; font-size: 23px; letter-spacing: .3px; }
+.subtitle { color: var(--muted); margin: 5px 0 0; font-size: 13px; }
+.connection {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 30px; padding: 9px 13px;
+  color: var(--muted); font-size: 12px;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #64748b;
+}
+.dot.online { background: var(--green); box-shadow: 0 0 9px #6ee7b766; }
+.dot.offline { background: var(--red); }
+main { max-width: 1550px; margin: auto; padding: 32px 5%; }
+.heading {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 15px; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+h2 { margin: 0; font-size: 22px; }
+h3 { margin: 0; font-size: 14px; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+button {
+  border: 1px solid var(--border);
+  background: var(--panel2); color: var(--text);
+  border-radius: 8px; padding: 10px 14px;
+}
+button:hover { border-color: var(--teal); }
+button.primary {
+  background: #0e766e; border-color: #0e9488; color: white;
+}
+button.primary:hover { background: #0f8b80; }
+button:disabled { opacity: .6; cursor: wait; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px; margin-bottom: 24px;
+}
+.card, .panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.card { padding: 21px; position: relative; overflow: hidden; }
+.card:after {
+  content: ""; position: absolute; width: 75px; height: 75px;
+  right: -30px; bottom: -38px; border-radius: 50%;
+  background: #ffffff08;
+}
+.card-label { color: var(--muted); font-size: 13px; }
+.card-value { font-size: 32px; font-weight: 700; margin-top: 14px; }
+.card-foot { color: var(--muted); font-size: 11px; margin-top: 8px; }
+.teal { color: var(--teal); }
+.green { color: var(--green); }
+.yellow { color: var(--yellow); }
+.red { color: var(--red); }
+.blue { color: var(--blue); }
+.networks {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 16px; margin-bottom: 24px;
+}
+.network {
+  padding: 18px 20px; display: flex;
+  align-items: center; gap: 14px;
+}
+.network-icon {
+  width: 42px; height: 42px; display: grid; place-items: center;
+  border-radius: 11px; background: #1d3049; color: var(--teal);
+  font-weight: bold;
+}
+.network-info { flex: 1; }
+.network-title { font-weight: 650; font-size: 14px; }
+.network-sub { color: var(--muted); font-size: 12px; margin-top: 5px; }
+.pill {
+  display: inline-flex; align-items: center;
+  border-radius: 20px; padding: 5px 9px;
+  font-size: 10px; font-weight: 750; letter-spacing: .3px;
+  white-space: nowrap;
+}
+.low { background: #123b32; color: var(--green); }
+.medium { background: #47391c; color: var(--yellow); }
+.high, .rejected, .flagged { background: #49212c; color: #fda4af; }
+.other { background: #26364c; color: #cbd5e1; }
+.verified { background: #15392f; color: var(--green); }
+.filters {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  padding: 16px; border-bottom: 1px solid var(--border);
+}
+input, select {
+  background: #0b1526; border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px;
+  padding: 10px 12px; outline: none; min-width: 145px;
+}
+input { flex: 1; min-width: 200px; }
+input:focus, select:focus { border-color: var(--teal); }
+.panel-heading {
+  display: flex; justify-content: space-between;
+  align-items: center; flex-wrap: wrap; gap: 12px;
+  padding: 20px; border-bottom: 1px solid var(--border);
+}
+.tablewrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 1050px; }
+th, td {
+  text-align: left; padding: 15px 16px;
+  border-bottom: 1px solid #223149;
+  font-size: 12px; vertical-align: top;
+}
+th {
+  background: #101a2c; color: var(--muted);
+  font-size: 10px; letter-spacing: .8px; text-transform: uppercase;
+}
+tbody tr:hover { background: #17253a; }
+tbody tr:last-child td { border-bottom: none; }
+.batch { color: var(--teal); font-weight: 700; }
+.route { white-space: nowrap; }
+.hash {
+  font-family: Consolas, monospace; color: var(--blue);
+  white-space: nowrap;
+}
+.copy {
+  padding: 4px 6px; font-size: 10px;
+  margin-left: 5px; border-radius: 5px;
+}
+.reason { color: #fda4af; max-width: 230px; line-height: 1.5; }
+.empty { padding: 35px; text-align: center; color: var(--muted); }
+.bottom {
+  display: flex; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 15px 20px; border-top: 1px solid var(--border);
+  color: var(--muted); font-size: 11px;
+}
+footer {
+  padding: 25px 5%; text-align: center;
+  color: #71839c; font-size: 11px;
+}
+
+/* Live blockchain activity */
+.activity-panel {
+  margin-bottom: 24px;
+}
+
+.activity-summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-list {
+  padding: 8px 20px;
+}
+
+.activity-item {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: start;
+  padding: 17px 0;
+  border-bottom: 1px solid #223149;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-marker {
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 8px #53e0c055;
+}
+
+.activity-marker.mint {
+  background: var(--green);
+}
+
+.activity-marker.burn {
+  background: var(--yellow);
+}
+
+.activity-title {
+  font-weight: 700;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.activity-detail {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.activity-hash {
+  display: inline-block;
+  max-width: 100%;
+  font-family: Consolas, monospace;
+  color: var(--blue);
+  overflow-wrap: anywhere;
+}
+
+.activity-time {
+  color: var(--muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.activity-error {
+  color: #fda4af;
+}
+
+@media (max-width: 520px) {
+  .activity-item {
+    grid-template-columns: 10px minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .activity-time {
+    grid-column: 2;
+  }
+}
+
+@media (max-width: 850px) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  main { padding: 24px 4%; }
+}
+@media (max-width: 520px) {
+  .cards, .networks { grid-template-columns: 1fr; }
+  h1 { font-size: 20px; }
+  .card-value { font-size: 27px; }
+  input { min-width: 100%; }
+}
+
+/* BridgeGuard section navigation */
+.main-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 5%;
+  background: #0e182a;
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--muted);
+  padding: 11px 16px;
+}
+
+.nav-button.active {
+  background: #143b3a;
+  border-color: #24645c;
+  color: var(--teal);
+}
+
+.page-section[hidden] {
+  display: none !important;
+}
+
+/* Reconciliation summary cards */
+#reconciliation-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+#reconciliation-stats .stat-card {
+  min-width: 0;
+  padding: 18px 14px;
+  border-radius: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+#reconciliation-stats .stat-card span {
+  font-size: 13px;
+  color: var(--muted, #64748b);
+}
+
+#reconciliation-stats .stat-card strong {
+  font-size: 28px;
+  line-height: 1.2;
+  font-weight: 750;
+}
+
+/* Wrap neatly on smaller screens */
+@media (max-width: 900px) {
+  #reconciliation-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  #reconciliation-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* Transfer Operations */
+.operation-intro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px;
+  margin-top: 18px;
+  background: var(--surface, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+}
+
+.operation-chain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.operation-chain-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--card, #e2e8f0);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.operation-chain p,
+.operation-step p,
+.operation-notice p {
+  margin: 5px 0 0;
+}
+
+.operation-arrow {
+  font-size: 25px;
+  color: var(--muted, #64748b);
+}
+
+.operation-notice {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 12px;
+}
+
+.operation-progress {
+  margin-top: 24px;
+}
+
+.operation-progress-heading,
+.operation-console-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.operation-progress-heading span {
+  font-size: 13px;
+  color: var(--muted, #64748b);
+}
+
+.operation-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.operation-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 10px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.operation-step > span {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--card, #e2e8f0);
+  font-weight: 700;
+}
+
+.operation-step strong {
+  font-size: 13px;
+}
+
+.operation-step p {
+  font-size: 11px;
+}
+
+.operation-step.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.operation-step.done {
+  border-color: #16a34a;
+  background: #f0fdf4;
+}
+
+.operation-step.failed {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.operation-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.operation-console {
+  margin-top: 24px;
+  overflow: hidden;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 12px;
+}
+
+.operation-console-heading {
+  padding: 14px 16px;
+  margin: 0;
+  border-bottom: 1px solid var(--border, #e2e8f0);
+}
+
+#operation-output {
+  padding: 16px;
+  margin: 0;
+  min-height: 100px;
+  max-height: 340px;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #111827;
+  color: #e5e7eb;
+  font: 12px/1.7 Consolas, monospace;
+}
+
+@media (max-width: 800px) {
+  .operation-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .operation-intro {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .operation-arrow {
+    transform: rotate(90deg);
+    margin-left: 8px;
+  }
+
+  .operation-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* BridgeGuard Transfer Operations — dark theme fix */
+.operation-intro {
+    background: #172338 !important;
+    border-color: #293b55 !important;
+    color: #e8eef8 !important;
+}
+
+.operation-intro strong,
+.operation-intro h3,
+.operation-intro .operation-chain strong {
+    color: #f1f5f9 !important;
+}
+
+.operation-intro p {
+    color: #a9bad2 !important;
+}
+
+.operation-chain-icon,
+.operation-step > span {
+    background: #263750 !important;
+    color: #eaf1fb !important;
+}
+
+.operation-arrow {
+    color: #7daeff !important;
+}
+
+.operation-step {
+    background: #172338 !important;
+    border-color: #293b55 !important;
+    color: #e8eef8 !important;
+}
+
+.operation-step strong {
+    color: #f1f5f9 !important;
+}
+
+.operation-step p {
+    color: #a9bad2 !important;
+}
+
+.operation-step.active {
+    background: #172d4b !important;
+    border-color: #60a5fa !important;
+}
+
+.operation-step.done {
+    background: #102d27 !important;
+    border-color: #34d399 !important;
+}
+
+.operation-step.failed {
+    background: #351c25 !important;
+    border-color: #f87171 !important;
+}
+
+/* Make the Start Secure Transfer button match the dashboard */
+#start-operation {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #3b82f6 !important;
+    border-radius: 9px;
+    padding: 12px 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#start-operation:hover:not(:disabled) {
+    background: #1d4ed8 !important;
+}
+
+#start-operation:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+#operation-status {
+    color: #e2e8f0;
+}
+
 </style>
 </head>
+
 <body>
 <header>
-<h1>BridgeGuard</h1>
-<p>Cross-Chain Pharmaceutical Transfer Security Monitor</p>
+  <div class="brand">
+    <div class="logo">⬡</div>
+    <div>
+      <h1>BridgeGuard <span class="teal">.</span></h1>
+      <p class="subtitle">Cross-Chain Pharmaceutical Security Console</p>
+    </div>
+  </div>
+  <div class="connection">
+    <span class="dot" id="apiDot"></span>
+    <span id="apiStatus">Checking cloud API...</span>
+  </div>
 </header>
+
+<nav class="main-nav" aria-label="Main navigation">
+  <button class="nav-button active" data-page="overview"
+    onclick="showPage('overview')">Overview</button>
+
+  <button class="nav-button" data-page="operations"
+    onclick="showPage('operations')">Transfer Operations</button>
+
+  <button class="nav-button" data-page="reconciliation"
+    onclick="showPage('reconciliation')">Reconciliation</button>
+
+  <button class="nav-button" data-page="audit"
+    onclick="showPage('audit')">Audit Log</button>
+</nav>
+
 <main>
-<div class="top">
-<div>
-<h2>Security Overview</h2>
-<p style="color:#9aabc2;margin-bottom:0">Monitor transfer risk and audit records</p>
-</div>
-<button onclick="loadTransfers()">Refresh Data</button>
-</div>
-<div class="cards">
-<div class="card"><p>Total Transfers</p><h3 id="total">—</h3></div>
-<div class="card"><p>Low Risk</p><h3 id="low" style="color:#6ee7b7">—</h3></div>
-<div class="card"><p>Medium Risk</p><h3 id="medium" style="color:#fcd34d">—</h3></div>
-<div class="card"><p>High Risk / Rejected</p><h3 id="high" style="color:#fda4af">—</h3></div>
-</div>
-<div class="panel">
-<div class="panelhead">
-<h2>Transfer Audit Log</h2>
-<p id="updated" style="color:#9aabc2;margin-bottom:0">Loading transfer records...</p>
-</div>
-<div class="tablewrap">
-<table>
-<thead>
-<tr>
-<th>Batch ID</th>
-<th>Source → Destination</th>
-<th>Quantity</th>
-<th>Risk Score</th>
-<th>Risk Status</th>
-<th>Transfer Status</th>
-<th>Risk Reasons</th>
-</tr>
-</thead>
-<tbody id="records">
-<tr><td colspan="7" class="message">Loading...</td></tr>
-</tbody>
-</table>
-</div>
-</div>
+  <section class="heading page-section" data-page="overview">
+    <div>
+      <h2>Security overview</h2>
+      <p class="muted small">Monitor transfer assessments and audit activity.</p>
+    </div>
+    <div class="actions">
+      <span class="muted small" id="lastUpdated">Loading records...</span>
+      <button class="primary" id="refreshButton" onclick="refreshAll()">↻ Refresh</button>
+    </div>
+  </section>
+
+  <section class="cards page-section" data-page="overview">
+    <div class="card">
+      <div class="card-label">Total assessments</div>
+      <div class="card-value" id="total">—</div>
+      <div class="card-foot">Saved cloud audit records</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Low risk</div>
+      <div class="card-value green" id="low">—</div>
+      <div class="card-foot">Assessment status: LOW</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Medium risk</div>
+      <div class="card-value yellow" id="medium">—</div>
+      <div class="card-foot">Requires attention</div>
+    </div>
+    <div class="card">
+      <div class="card-label">High risk / rejected</div>
+      <div class="card-value red" id="high">—</div>
+      <div class="card-foot">High-risk and rejected assessments</div>
+    </div>
+  </section>
+
+  <section class="networks page-section" data-page="overview">
+    <div class="panel network">
+      <div class="network-icon">A</div>
+      <div class="network-info">
+        <div class="network-title">Chain A · Source</div>
+        <div class="network-sub">Batch registration and locking</div>
+      </div>
+      <span class="pill other">LOCAL NODE</span>
+    </div>
+    <div class="panel network">
+      <div class="network-icon">B</div>
+      <div class="network-info">
+        <div class="network-title">Chain B · Destination</div>
+        <div class="network-sub">Risk-gated batch minting</div>
+      </div>
+      <span class="pill other">LOCAL NODE</span>
+    </div>
+  </section>
+
+  
+<section class="panel activity-panel page-section" data-page="overview">
+  <div class="panel-heading">
+    <div>
+      <h3>Live Blockchain Activity</h3>
+      <p class="muted small" style="margin-bottom:0">
+        Contract events read directly from the Chain A and Chain B nodes
+      </p>
+    </div>
+    <span class="pill other" id="chainEventCount">Loading events...</span>
+  </div>
+
+  <div class="activity-summary">
+    <span class="pill other" id="chainAStatus">CHAIN A · Connecting</span>
+    <span class="pill other" id="chainBStatus">CHAIN B · Connecting</span>
+  </div>
+
+  <div class="activity-list" id="chainEventList">
+    <div class="empty">Loading blockchain events...</div>
+  </div>
+
+  <div class="bottom">
+    <span id="chainEventMessage">Waiting for blockchain nodes...</span>
+    <span>Refreshes every 10 seconds</span>
+  </div>
+</section>
+
+
+
+<section class="panel page-section" data-page="operations" hidden>
+  <div class="panel-heading">
+    <div>
+      <h3>Transfer Operations</h3>
+      <p class="muted small">
+        Register, verify and securely transfer a pharmaceutical batch.
+      </p>
+    </div>
+    <span class="pill other" id="operation-status">IDLE</span>
+  </div>
+
+  <div class="operation-intro">
+    <div class="operation-chain">
+      <span class="operation-chain-icon">A</span>
+      <div>
+        <strong>Source Chain</strong>
+        <p class="muted small">Register and lock batch</p>
+      </div>
+    </div>
+
+    <div class="operation-arrow">→</div>
+
+    <div class="operation-chain">
+      <span class="operation-chain-icon">B</span>
+      <div>
+        <strong>Destination Chain</strong>
+        <p class="muted small">Risk-gated mint</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="operation-notice">
+    <strong>Secure transfer workflow</strong>
+    <p class="muted small">
+      This runs your existing BridgeGuard automation. It generates a new
+      batch ID and uses the configuration in your existing scripts.
+      Minting is subject to the cloud risk assessment.
+    </p>
+  </div>
+
+  <div class="operation-progress">
+    <div class="operation-progress-heading">
+      <strong>Workflow progress</strong>
+      <span id="operation-stage">Waiting to start</span>
+    </div>
+
+    <div class="operation-steps">
+      <div class="operation-step" id="op-step-1">
+        <span>1</span>
+        <div>
+          <strong>Register batch</strong>
+          <p class="muted small">Chain A</p>
+        </div>
+      </div>
+
+      <div class="operation-step" id="op-step-2">
+        <span>2</span>
+        <div>
+          <strong>Lock batch</strong>
+          <p class="muted small">Capture transaction hash</p>
+        </div>
+      </div>
+
+      <div class="operation-step" id="op-step-3">
+        <span>3</span>
+        <div>
+          <strong>Assess risk</strong>
+          <p class="muted small">Cloud security engine</p>
+        </div>
+      </div>
+
+      <div class="operation-step" id="op-step-4">
+        <span>4</span>
+        <div>
+          <strong>Secure mint</strong>
+          <p class="muted small">Chain B</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="operation-actions">
+    <button type="button" id="start-operation"
+      onclick="startBridgeOperation()">
+      Start Secure Transfer
+    </button>
+    <span class="muted small" id="operation-message">
+      Make sure both local blockchain nodes are running.
+    </span>
+  </div>
+
+  <div class="operation-console">
+    <div class="operation-console-heading">
+      <strong>Execution log</strong>
+      <span class="muted small">BridgeGuard automation</span>
+    </div>
+    <pre id="operation-output">No operation has been started yet.</pre>
+  </div>
+</section>
+
+
+
+<section class="panel page-section" id="reconciliation-panel" data-page="reconciliation" hidden>
+  <div class="panel-heading">
+    <div>
+      <h3>On-Chain Reconciliation</h3>
+      <p>Comparing cloud risk assessments with actual blockchain events</p>
+    </div>
+    <button type="button" onclick="loadReconciliation()">Refresh</button>
+  </div>
+
+  <div class="stats-grid" id="reconciliation-stats">
+    <div class="stat-card">
+      <span>Completed</span>
+      <strong id="recon-completed">—</strong>
+    </div>
+    <div class="stat-card">
+      <span>Blocked</span>
+      <strong id="recon-blocked">—</strong>
+    </div>
+    <div class="stat-card">
+      <span>Pending</span>
+      <strong id="recon-pending">—</strong>
+    </div>
+    <div class="stat-card">
+      <span>Mismatch</span>
+      <strong id="recon-mismatch">—</strong>
+    </div>
+    <div class="stat-card">
+      <span>Unverified</span>
+      <strong id="recon-unknown">—</strong>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto; margin-top:18px;">
+    <table>
+      <thead>
+        <tr>
+          <th>Batch ID</th>
+          <th>Risk</th>
+          <th>Destination</th>
+          <th>Reconciliation</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody id="reconciliation-body">
+        <tr>
+          <td colspan="5">Loading reconciliation results...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p style="margin-top:12px; font-size:12px; opacity:0.7;">
+    Unverified means the corresponding blockchain event was not found in the
+    scanned history. It does not automatically mean the transfer failed.
+  </p>
+</section>
+ 
+<section class="panel page-section" data-page="audit" hidden>
+    <div class="panel-heading">
+      <div>
+        <h3>Transfer audit log</h3>
+        <p class="muted small" style="margin-bottom:0">
+          Cloud risk assessments and recorded transfer details
+        </p>
+      </div>
+      <span class="pill other" id="recordCount">0 RECORDS</span>
+    </div>
+
+    <div class="filters">
+      <input id="search" type="search"
+        placeholder="Search batch ID, transaction hash, or reason..."
+        oninput="renderTransfers()">
+      <select id="riskFilter" onchange="renderTransfers()">
+        <option value="ALL">All risk levels</option>
+        <option value="LOW">Low risk</option>
+        <option value="MEDIUM">Medium risk</option>
+        <option value="HIGH">High risk</option>
+        <option value="REJECTED">Rejected</option>
+      </select>
+      <select id="statusFilter" onchange="renderTransfers()">
+        <option value="ALL">All transfer statuses</option>
+        <option value="VERIFIED">Verified</option>
+        <option value="FLAGGED">Flagged</option>
+        <option value="MINTED">Minted</option>
+        <option value="REJECTED">Rejected</option>
+      </select>
+      <button onclick="clearFilters()">Clear filters</button>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Batch ID</th>
+            <th>Route</th>
+            <th>Quantity</th>
+            <th>Risk score</th>
+            <th>Risk status</th>
+            <th>Record status</th>
+            <th>Risk reasons</th>
+            <th>Transaction</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody id="records">
+          <tr><td colspan="9" class="empty">Loading audit records...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="bottom">
+      <span id="tableMessage">Waiting for API response...</span>
+      <span>Auto-refresh every 10 seconds</span>
+    </div>
+  </section>
 </main>
-<footer>BridgeGuard • Prototype monitoring dashboard • Risk assessment does not itself execute or block blockchain transactions.</footer>
+
+<footer>
+  BRIDGEGUARD SECURITY CONSOLE · CLOUD RISK ASSESSMENT & AUDIT MONITOR
+  <br><br>
+  Risk assessments are recorded in the cloud. Mint status is not independently
+  confirmed by this dashboard unless on-chain verification is implemented.
+</footer>
+
 <script>
+let allTransfers = [];
+let loading = false;
+let chainEvents = [];
+showPage("overview");
+
+function showPage(page) {
+  document.querySelectorAll(".page-section").forEach(section => {
+    section.hidden = !section.dataset.page.split(" ").includes(page);
+  });
+
+  document.querySelectorAll(".nav-button").forEach(button => {
+    const active = button.dataset.page === page;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-current", active ? "page" : "false");
+  });
+
+  if (page === "reconciliation") {
+    loadReconciliation();
+  }
+
+  if (page === "audit") {
+    renderTransfers();
+  }
+}
+
+
 function escapeHtml(value) {
-    return String(value ?? "").replace(/[&<>"']/g, function(c) {
-        return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
-    });
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;",
+    '"': "&quot;", "'": "&#39;"
+  })[c]);
 }
+
 function statusClass(value) {
-    const s = String(value || "").toLowerCase();
-    if (s === "low") return "low";
-    if (s === "medium") return "medium";
-    if (s === "high" || s === "rejected" || s === "flagged") return s;
-    return "other";
+  const s = String(value || "").toLowerCase();
+  if (["low", "medium", "high", "rejected", "flagged",
+       "verified"].includes(s)) return s;
+  return "other";
 }
-async function loadTransfers() {
-    const body = document.getElementById("records");
-    document.getElementById("updated").textContent = "Fetching latest records...";
-    try {
-        const response = await fetch("/transfers");
-        if (!response.ok) throw new Error("API returned " + response.status);
-        const data = await response.json();
-        const transfers = Array.isArray(data) ? data : (data.transfers || []);
-        document.getElementById("total").textContent = transfers.length;
-        document.getElementById("low").textContent = transfers.filter(t => t.risk_status === "LOW").length;
-        document.getElementById("medium").textContent = transfers.filter(t => t.risk_status === "MEDIUM").length;
-        document.getElementById("high").textContent = transfers.filter(t => ["HIGH","REJECTED"].includes(t.risk_status)).length;
-        if (transfers.length === 0) {
-            body.innerHTML = '<tr><td colspan="7" class="message">No transfer records found.</td></tr>';
-        } else {
-            body.innerHTML = transfers.map(t => {
-                const reasons = Array.isArray(t.risk_reasons) ? t.risk_reasons.join(", ") : "";
-                return `<tr>
-                <td>${escapeHtml(t.batch_id)}</td>
-                <td>${escapeHtml(t.source_chain)} → ${escapeHtml(t.destination_chain)}</td>
-                <td>${escapeHtml(t.quantity)}</td>
-                <td><strong>${escapeHtml(t.risk_score ?? 0)}</strong></td>
-                <td><span class="status ${statusClass(t.risk_status)}">${escapeHtml(t.risk_status)}</span></td>
-                <td><span class="status ${statusClass(t.transfer_status)}">${escapeHtml(t.transfer_status)}</span></td>
-                <td class="reason">${escapeHtml(reasons || "No risk reasons recorded")}</td>
-                </tr>`;
-            }).join("");
-        }
-        document.getElementById("updated").textContent = "Last refreshed: " + new Date().toLocaleTimeString();
-    } catch (error) {
-        body.innerHTML = '<tr><td colspan="7" class="message">Could not load records. Check that the API server is running and /transfers is available.</td></tr>';
-        document.getElementById("updated").textContent = "Unable to connect to the API.";
+
+function formatDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString();
+}
+
+function shortHash(hash) {
+  if (!hash) return "Not recorded";
+  return hash.length > 18
+    ? hash.slice(0, 10) + "..." + hash.slice(-6)
+    : hash;
+}
+
+async function checkHealth() {
+  const dot = document.getElementById("apiDot");
+  const label = document.getElementById("apiStatus");
+
+  try {
+    const response = await fetch("/health", { cache: "no-store" });
+    if (!response.ok) throw new Error("API unavailable");
+    const data = await response.json();
+    if (data.status !== "ok") throw new Error("Service unhealthy");
+
+    dot.className = "dot online";
+    label.textContent = "Cloud API connected";
+  } catch (error) {
+    dot.className = "dot offline";
+    label.textContent = "Cloud API unavailable";
+  }
+}
+
+
+async function refreshChainEvents() {
+  const list = document.getElementById("chainEventList");
+  const count = document.getElementById("chainEventCount");
+  const chainA = document.getElementById("chainAStatus");
+  const chainB = document.getElementById("chainBStatus");
+  const message = document.getElementById("chainEventMessage");
+
+  try {
+    const response = await fetch("/chain-events", {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("Blockchain API returned " + response.status);
     }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || "Could not retrieve blockchain events");
+    }
+
+    chainEvents = Array.isArray(data.events) ? data.events : [];
+
+    chainA.className = "pill verified";
+    chainA.textContent =
+      "CHAIN A · Block " + data.chainA.latestBlock;
+
+    chainB.className = "pill verified";
+    chainB.textContent =
+      "CHAIN B · Block " + data.chainB.latestBlock;
+
+    count.className = "pill other";
+    count.textContent =
+      chainEvents.length + (chainEvents.length === 1
+        ? " EVENTS"
+        : " EVENTS");
+
+    if (chainEvents.length === 0) {
+      list.innerHTML =
+        '<div class="empty">No matching events found in the scanned block range.</div>';
+    } else {
+      list.innerHTML = chainEvents.map(event => {
+        const args = event.args || {};
+        const isMint = event.event === "BatchMinted";
+        const isBurn = event.event === "BatchBurned";
+        const markerClass = isMint ? "mint" : isBurn ? "burn" : "";
+
+        const details = [
+          args.quantity != null ? "Quantity: " + args.quantity : "",
+          args.nonce != null ? "Nonce: " + args.nonce : "",
+          args.destinationChainId != null
+            ? "Destination chain: " + args.destinationChainId
+            : "",
+          args.recipient ? "Recipient: " + args.recipient : "",
+          args.owner ? "Owner: " + args.owner : ""
+        ].filter(Boolean).join(" · ");
+
+        const hash = String(event.transactionHash || "");
+        const shortHash = hash
+          ? hash.slice(0, 10) + "..." + hash.slice(-8)
+          : "Unavailable";
+
+        return `
+          <div class="activity-item">
+            <span class="activity-marker ${markerClass}"></span>
+            <div>
+              <div class="activity-title">
+                ${escapeHtml(event.event)}
+                <span class="pill other">${escapeHtml(event.chain)}</span>
+              </div>
+              <div class="activity-detail">
+                Batch ID:
+                <strong class="batch">${escapeHtml(args.batchId ?? "N/A")}</strong>
+                · Block ${escapeHtml(event.blockNumber)}
+                ${details ? "<br>" + escapeHtml(details) : ""}
+                <br>
+                Transaction:
+                <span class="activity-hash"
+                  title="${escapeHtml(hash)}">${escapeHtml(shortHash)}</span>
+              </div>
+            </div>
+            <span class="activity-time">On-chain</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    message.textContent =
+      "Read directly from both blockchain nodes · " +
+      new Date().toLocaleTimeString();
+
+  } catch (error) {
+    chainA.className = "pill flagged";
+    chainA.textContent = "CHAIN A · Unavailable";
+
+    chainB.className = "pill flagged";
+    chainB.textContent = "CHAIN B · Unavailable";
+
+    count.className = "pill flagged";
+    count.textContent = "EVENT LOAD FAILED";
+
+    list.innerHTML =
+      '<div class="empty activity-error">' +
+      'Could not load blockchain events. Check that both nodes and the cloud API are running.' +
+      '</div>';
+
+    message.textContent = error.message;
+  }
 }
-loadTransfers();
+
+async function refreshAll() {
+  if (loading) return;
+  loading = true;
+
+  const button = document.getElementById("refreshButton");
+  button.disabled = true;
+  button.textContent = "Refreshing...";
+
+  await checkHealth();
+  refreshChainEvents();
+  
+  try {
+    const response = await fetch("/transfers", { cache: "no-store" });
+    if (!response.ok) throw new Error("API returned " + response.status);
+
+    const data = await response.json();
+    allTransfers = Array.isArray(data) ? data : (data.transfers || []);
+
+    document.getElementById("lastUpdated").textContent =
+      "Updated " + new Date().toLocaleTimeString();
+
+    document.getElementById("tableMessage").textContent =
+      "Cloud records loaded successfully.";
+
+    updateMetrics();
+    renderTransfers();
+  } catch (error) {
+    document.getElementById("records").innerHTML =
+      '<tr><td colspan="9" class="empty">' +
+      'Could not load records. Check the cloud API and Supabase connection.' +
+      '</td></tr>';
+
+    document.getElementById("tableMessage").textContent =
+      "Unable to retrieve audit records.";
+  } finally {
+    loading = false;
+    button.disabled = false;
+    button.textContent = "↻ Refresh";
+  }
+}
+
+function updateMetrics() {
+  const count = status => allTransfers.filter(
+    t => String(t.risk_status || "").toUpperCase() === status
+  ).length;
+
+  document.getElementById("total").textContent = allTransfers.length;
+  document.getElementById("low").textContent = count("LOW");
+  document.getElementById("medium").textContent = count("MEDIUM");
+  document.getElementById("high").textContent =
+    allTransfers.filter(t =>
+      ["HIGH", "REJECTED"].includes(
+        String(t.risk_status || "").toUpperCase()
+      )
+    ).length;
+}
+
+function renderTransfers() {
+  const search = document.getElementById("search").value.trim().toLowerCase();
+  const risk = document.getElementById("riskFilter").value;
+  const status = document.getElementById("statusFilter").value;
+  const tbody = document.getElementById("records");
+
+  const filtered = allTransfers.filter(t => {
+    const reasons = Array.isArray(t.risk_reasons)
+      ? t.risk_reasons.join(" ")
+      : String(t.risk_reasons || "");
+
+    const searchable = [
+      t.batch_id, t.transaction_hash, t.source_chain,
+      t.destination_chain, reasons, t.risk_status, t.transfer_status
+    ].join(" ").toLowerCase();
+
+    return searchable.includes(search)
+      && (risk === "ALL" ||
+          String(t.risk_status || "").toUpperCase() === risk)
+      && (status === "ALL" ||
+          String(t.transfer_status || "").toUpperCase() === status);
+  });
+
+  document.getElementById("recordCount").textContent =
+    filtered.length + (filtered.length === 1 ? " RECORD" : " RECORDS");
+
+  if (!filtered.length) {
+    tbody.innerHTML =
+      '<tr><td colspan="9" class="empty">No matching records found.</td></tr>';
+    document.getElementById("tableMessage").textContent =
+      "Try changing your search or filters.";
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(t => {
+    const reasons = Array.isArray(t.risk_reasons)
+      ? t.risk_reasons.join(", ")
+      : String(t.risk_reasons || "");
+
+    const hash = String(t.transaction_hash || "");
+    const transaction = hash
+      ? '<span class="hash" title="' + escapeHtml(hash) + '">' +
+        escapeHtml(shortHash(hash)) + '</span>' +
+        '<button class="copy" data-hash="' + escapeHtml(hash) +
+        '" onclick="copyHash(this)">Copy</button>'
+      : '<span class="muted">Not recorded</span>';
+
+    return `<tr>
+      <td class="batch">${escapeHtml(t.batch_id)}</td>
+      <td class="route">${escapeHtml(t.source_chain)} → ${escapeHtml(t.destination_chain)}</td>
+      <td>${escapeHtml(t.quantity)}</td>
+      <td><strong>${escapeHtml(t.risk_score ?? 0)}</strong></td>
+      <td><span class="pill ${statusClass(t.risk_status)}">${escapeHtml(t.risk_status || "UNKNOWN")}</span></td>
+      <td><span class="pill ${statusClass(t.transfer_status)}">${escapeHtml(t.transfer_status || "UNKNOWN")}</span></td>
+      <td class="reason">${escapeHtml(reasons || "No risk reasons recorded")}</td>
+      <td>${transaction}</td>
+      <td>${escapeHtml(formatDate(t.created_at))}</td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("tableMessage").textContent =
+    "Showing " + filtered.length + " of " + allTransfers.length +
+    " saved assessments.";
+}
+
+async function copyHash(button) {
+  const hash = button.dataset.hash;
+  try {
+    await navigator.clipboard.writeText(hash);
+    button.textContent = "Copied!";
+    setTimeout(() => button.textContent = "Copy", 1200);
+  } catch {
+    window.prompt("Copy transaction hash:", hash);
+  }
+}
+
+function clearFilters() {
+  document.getElementById("search").value = "";
+  document.getElementById("riskFilter").value = "ALL";
+  document.getElementById("statusFilter").value = "ALL";
+  renderTransfers();
+}
+
+
+let operationPolling = false;
+
+function setOperationStatus(status) {
+  document.getElementById("operation-status").textContent = status;
+}
+
+function updateOperationSteps(output, status, running) {
+  const lines = [
+    /STEP 1:|Registering batch/i,
+    /STEP 2:|Locking batch|Captured lock hash/i,
+    /STEP 3:|cloud assessment|risk assessment/i,
+    /SECURE MINT SUCCESSFUL|MINT BLOCKED|Minting/i
+  ];
+
+  let current = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].test(output)) current = i;
+  }
+
+  const blocked = status === "BLOCKED";
+  const failed = status === "FAILED";
+  const completed = status === "COMPLETED";
+
+  document.querySelectorAll(".operation-step").forEach((step, i) => {
+    step.classList.remove("active", "done", "failed");
+
+    if (completed || (blocked && i < 3)) {
+      step.classList.add("done");
+    } else if (failed && i === Math.max(current, 0)) {
+      step.classList.add("failed");
+    } else if (running && i === current) {
+      step.classList.add("active");
+    }
+  });
+
+  const stage = document.getElementById("operation-stage");
+
+  if (completed) {
+    stage.textContent = "Transfer completed";
+  } else if (blocked) {
+    stage.textContent = "Transfer blocked by security checks";
+  } else if (failed) {
+    stage.textContent = "Workflow failed";
+  } else if (running && current >= 0) {
+    stage.textContent = [
+      "Registering batch on Chain A",
+      "Locking batch on Chain A",
+      "Assessing transfer risk",
+      "Processing destination mint"
+    ][current];
+  } else if (running) {
+    stage.textContent = "Starting workflow...";
+  } else {
+    stage.textContent = "Waiting to start";
+  }
+}
+
+async function startBridgeOperation() {
+  if (operationPolling) return;
+
+  const button = document.getElementById("start-operation");
+  const message = document.getElementById("operation-message");
+  const output = document.getElementById("operation-output");
+
+  const confirmed = window.confirm(
+    "Start a real BridgeGuard workflow on your local blockchains? " +
+    "This will register and lock a new pharmaceutical batch."
+  );
+
+  if (!confirmed) return;
+
+  operationPolling = true;
+  button.disabled = true;
+  button.textContent = "Running...";
+  message.textContent = "Starting the workflow...";
+  output.textContent = "Connecting to BridgeGuard backend...";
+  setOperationStatus("RUNNING");
+
+  try {
+    const response = await fetch("/operations/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Could not start workflow.");
+    }
+
+    while (true) {
+      const statusResponse = await fetch("/operations/status");
+
+      if (!statusResponse.ok) {
+        throw new Error("Could not read workflow status.");
+      }
+
+      const data = await statusResponse.json();
+
+      output.textContent = data.output || "Waiting for workflow output...";
+      output.scrollTop = output.scrollHeight;
+
+      setOperationStatus(data.status || "RUNNING");
+      updateOperationSteps(
+        data.output || "",
+        data.status || "RUNNING",
+        data.running
+      );
+
+      if (!data.running) {
+        if (data.status === "COMPLETED") {
+          message.textContent = "Secure transfer completed successfully.";
+        } else if (data.status === "BLOCKED") {
+          message.textContent =
+            "Mint was blocked by the workflow's security checks.";
+        } else if (data.status === "FAILED") {
+          message.textContent =
+            "Workflow failed. Review the execution log.";
+        } else {
+          message.textContent = "Workflow finished. Review the execution log.";
+        }
+
+        break;
+      }
+
+      message.textContent = "BridgeGuard is processing the transfer...";
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+  } catch (error) {
+    setOperationStatus("ERROR");
+    message.textContent = error.message;
+    output.textContent += "\n\nERROR: " + error.message;
+  } finally {
+    operationPolling = false;
+    button.disabled = false;
+    button.textContent = "Start Secure Transfer";
+  }
+}
+
+
+refreshAll();
+setInterval(refreshAll, 10000);
+
+async function loadReconciliation() {
+  const body = document.getElementById("reconciliation-body");
+
+  try {
+    const response = await fetch("/reconciliation");
+    if (!response.ok) {
+      throw new Error("API returned HTTP " + response.status);
+    }
+
+    const data = await response.json();
+    const counts = data.counts || {};
+
+    document.getElementById("recon-completed").textContent =
+      counts.COMPLETED ?? 0;
+    document.getElementById("recon-blocked").textContent =
+      counts.BLOCKED ?? 0;
+    document.getElementById("recon-pending").textContent =
+      counts.PENDING ?? 0;
+    document.getElementById("recon-mismatch").textContent =
+      counts.MISMATCH ?? 0;
+    document.getElementById("recon-unknown").textContent =
+      counts.UNKNOWN ?? 0;
+
+    const results = data.results || [];
+
+    if (results.length === 0) {
+      body.innerHTML =
+        '<tr><td colspan="5">No reconciliation records found.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = "";
+
+    results.forEach(function (item) {
+      const status = String(item.status || "UNKNOWN").toUpperCase();
+      const displayStatus =
+        status === "UNKNOWN" ? "UNVERIFIED" : status;
+
+      const row = document.createElement("tr");
+
+      const values = [
+        item.batchId ?? item.batch_id ?? "—",
+        item.riskStatus ?? item.risk_status ?? "—",
+        item.destinationChain ?? item.destination_chain ?? "—",
+        displayStatus,
+        item.details ?? item.message ??
+          (Array.isArray(item.reasons) ? item.reasons.join(", ") : "—")
+      ];
+
+      values.forEach(function (value) {
+        const cell = document.createElement("td");
+        cell.textContent = String(value);
+        row.appendChild(cell);
+      });
+
+      body.appendChild(row);
+    });
+  } catch (error) {
+    body.innerHTML =
+      '<tr><td colspan="5">Could not load reconciliation. Check that the cloud API is running.</td></tr>';
+    console.error("Reconciliation error:", error);
+  }
+}
+
+loadReconciliation();
+setInterval(loadReconciliation, 10000);
+
 </script>
 </body>
 </html>
