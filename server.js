@@ -659,11 +659,10 @@ app.get("/operations/status", (req, res) => {
     res.json(bridgeOperation);
 });
 
-const PORT = process.env.PORT || 3000;
-const HOST = LOCAL_OPERATIONS_ENABLED
-    ? "127.0.0.1"
-    : "0.0.0.0";
 
-app.listen(PORT, HOST, () => {
-    console.log(`Cloud service running at http://${HOST}:${PORT}`);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Cloud service running on port ${PORT}`);
 });
+
