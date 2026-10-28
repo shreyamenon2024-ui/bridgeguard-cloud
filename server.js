@@ -222,13 +222,17 @@ const chainBArtifactPath = path.join(
     "PharmaBridgeB.json"
 );
 
-const chainAInterface = new Interface(
-    JSON.parse(fs.readFileSync(chainAArtifactPath, "utf8")).abi
-);
+const chainAInterface = fs.existsSync(chainAArtifactPath)
+    ? new Interface(
+        JSON.parse(fs.readFileSync(chainAArtifactPath, "utf8")).abi
+      )
+    : null;
 
-const chainBInterface = new Interface(
-    JSON.parse(fs.readFileSync(chainBArtifactPath, "utf8")).abi
-);
+const chainBInterface = fs.existsSync(chainBArtifactPath)
+    ? new Interface(
+        JSON.parse(fs.readFileSync(chainBArtifactPath, "utf8")).abi
+      )
+    : null;
 
 async function readBridgeEvents(
     provider,
@@ -288,6 +292,12 @@ async function readBridgeEvents(
 }
 
 app.get("/chain-events", async (req, res) => {
+        if (!chainAInterface || !chainBInterface) {
+        return res.status(503).json({
+            success: false,
+            error: "Blockchain monitoring is unavailable in this cloud deployment."
+        });
+    }
     try {
         const [chainAEvents, chainBEvents] = await Promise.all([
             readBridgeEvents(
@@ -335,6 +345,12 @@ app.get("/chain-events", async (req, res) => {
 });
 
 app.get("/reconciliation", async (req, res) => {
+        if (!chainAInterface || !chainBInterface) {
+        return res.status(503).json({
+            success: false,
+            error: "On-chain reconciliation is unavailable in this cloud deployment."
+        });
+    }
     try {
         // 1. Load saved cloud assessments.
         const { data: transfers, error } = await supabase
